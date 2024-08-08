@@ -9,7 +9,7 @@ import path from "path";
 import { BlindAuction, ISemaphore, Groth16Verifier } from "../typechain-types"
 import { buildPoseidonOpt as buildPoseidon } from 'circomlibjs';
 // import { ethers } from 'ethers';
-const { exportCallDataGroth16 } = require("./utils/utils");
+const { exportCallDataGroth16, proofToSCFormat } = require("./utils/utils");
 
 function genRandomNumber(numberOfBytes = 31) {
 	return ethers.toBigInt(ethers.randomBytes(numberOfBytes));
@@ -56,26 +56,52 @@ describe("BlindAuction", () => {
         it("Should allow users to bid", async () => {
             const { semaphoreContract, feedbackContract, groupId, verifierContract } = await loadFixture(deployFeedbackFixture)
 
-            const users = [new Identity(), new Identity(), new Identity(), new Identity()]
+            const users = [new Identity()/* , new Identity(), new Identity(), new Identity() */]
             const group = new Group()
             const scope = group.root
 
 	    const revealData = [];
 	    let init_bid = 100;
+	    let maxBid = 100000;
+
+	    const wasmPath = path.join(process.cwd(), 'test/zkproof/ZkGovAuction.wasm');
+	    const provingKeyPath = path.join(process.cwd(), 'test/zkproof/ZkGovAuction_final.zkey');
             for (const user of users) {
                 await feedbackContract.joinGroup(user.commitment)
                 group.addMember(user.commitment)
-		const poseidon = await buildPoseidon();
+		// const poseidon = await buildPoseidon();
 		const blindSecret = genRandomNumber();
-		const p = poseidon.F.toString(poseidon([init_bid, blindSecret]))
+		// const p = poseidon.F.toString(poseidon([init_bid, blindSecret]))
 		// const blindedBid = ethers.getBigInt(p);
-		const proof = await generateProof(user, group, p, groupId)
+		const input = {
+			bid: init_bid,
+			biddingAddress: BigInt("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+			key: blindSecret,
+			groupId : groupId,
+			maxBid: BigInt(maxBid)
+		};
+		console.log("input", input)
+		const proof_2 = await exportCallDataGroth16(
+			input,
+			wasmPath,
+			provingKeyPath
+		);
+		console.log("proof_2", proof_2)
+		const proof = await generateProof(user, group, proof_2.Input[0], groupId)
+		// const a = await verifierContract.verifyProof(proof_2.a, proof_2.b, proof_2.c, proof_2.pub)
+		
+		// console.log("a", a);
+		
 		const transaction =  await feedbackContract.bid(
 			proof.merkleTreeDepth,
 			proof.merkleTreeRoot,
 			proof.nullifier,
-			p,
-			proof.points
+			proof.points,
+			proof_2.a,
+			proof_2.b,
+			proof_2.c,
+			proof_2.Input
+
 		)
 		await expect(transaction)
 		.to.emit(semaphoreContract, "ProofValidated")
@@ -86,21 +112,43 @@ describe("BlindAuction", () => {
 			proof.nullifier,
 			proof.message,
 			groupId,
-			proof.points
+			proof.points,
 		)
-		revealData.push([init_bid.toString(), blindSecret.toString()]);
+
+		// const input2 = {
+		// 	bid: init_bid,
+		// 	biddingAddress: BigInt("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+		// 	groupId : groupId,
+		// 	x: BigInt(2)
+		// };
+		// const proof_3 = await proofToSCFormat(
+		// 	input2,
+		// 	wasmPath,
+		// 	provingKeyPath
+		// );
+		// const transaction2 =  await feedbackContract.revealBid(
+		// 	proof_3.a,
+		// 	proof_3.b,
+		// 	proof_3.c,
+		// 	proof_3.pub
+		//
+		// )
+		// revealData.push([init_bid.toString(), blindSecret.toString()]);
 		init_bid = init_bid * 5;
             }
-	    console.log("revealData", revealData)
+	    // console.log("revealData", revealData)
 
 
 	    const bids = await feedbackContract.getBids();
 	    console.log("bids", bids);
-	    for (const r of revealData) {
-		    console.log("going to insert", r[0].toString())
-		    await feedbackContract.reveal_phase(r[0].toString(), r[1].toString())
-		    console.log("inserted")
-	    }
+
+	    const rbids = await feedbackContract.getRevealBids();
+	    console.log("rbids", rbids);
+	    // for (const r of revealData) {
+		   //  console.log("going to insert", r[0].toString())
+		   //  await feedbackContract.reveal_phase(r[0].toString(), r[1].toString())
+		   //  console.log("inserted")
+	    // }
 	    // const r = await feedbackContract.getRevealBids();
 	    // console.log("r", r);
 	    // const input = {

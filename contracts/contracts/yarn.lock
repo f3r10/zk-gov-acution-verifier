@@ -3323,7 +3323,7 @@ poseidon-lite@0.2.0:
   resolved "https://registry.yarnpkg.com/poseidon-lite/-/poseidon-lite-0.2.0.tgz#dbc242ebd9c10c32d507a533fa497231d168fd72"
   integrity sha512-vivDZnGmz8W4G/GzVA72PXkfYStjilu83rjjUfpL4PueKcC8nfX6hCPh2XhoC5FBgC6y0TA3YuUeUo5YCcNoig==
 
-poseidon-solidity@0.0.5:
+poseidon-solidity@0.0.5, poseidon-solidity@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/poseidon-solidity/-/poseidon-solidity-0.0.5.tgz#3f93e01cfe25f6d2f2fac49734fbb00961b84655"
   integrity sha512-NzrvSwHzvZgT4hvg2GyGqeR+UOU/eLSEt4wAoXEua+VaR7NTKKwx1X9bPlh1VMBEVEno+IWvkRBbidFGzTeAqQ==

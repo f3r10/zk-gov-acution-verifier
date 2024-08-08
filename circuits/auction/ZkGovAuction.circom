@@ -1,28 +1,35 @@
 pragma circom 2.1.6;
 include "../node_modules/circomlib/circuits/poseidon.circom";
+include "../node_modules/circomlib/circuits/comparators.circom";
 
 template ZauKtion() {
     // private signals
     signal input bid;
-    signal input idSecret;
+    signal input key;
+    //signal input idSecret;
 
     // public signals
-    signal input auctionId;
-    signal input x;
+    signal input biddingAddress;
+    signal input groupId;
+    signal input maxBid;
+
+    component gt = GreaterThan(128);
+    gt.in[0] <== bid;
+    gt.in[1] <== 0;
+
+    1 === gt.out;
+
+    component lt = LessThan(128);
+    lt.in[0] <== bid;
+    lt.in[1] <== maxBid;
+
+    1 === lt.out;
     
     // outputs
-    signal output y;
-    signal output nullifier;
     signal output idCommitment;
-    signal output winningCommitment;
     
-    idCommitment <== Poseidon(2)([bid, idSecret]); 
-    winningCommitment <== Poseidon(2)([idCommitment, idSecret]);
+    idCommitment <== Poseidon(4)([bid, biddingAddress, groupId, key]);
 
-    signal a1 <== Poseidon(2)([auctionId, idSecret]);
-    y <== a1 * x + bid;
-
-    nullifier <== Poseidon(1)([a1]);
 }
 
-component main { public [x, auctionId] } = ZauKtion();
+component main { public [groupId, biddingAddress, maxBid] } = ZauKtion();

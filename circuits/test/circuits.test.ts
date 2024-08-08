@@ -12,10 +12,11 @@ describe("ZkGovAuction circuit", function () {
 
   it("Should generate the witness successfully", async function () {
     let input = {
-    "x": "5",
-    "auctionId": "77",
-    "bid": "500",
-    "idSecret": "1234"
+	"groupId": "5",
+	"maxBid": "10000000001",
+	"bid": "10000000000",
+	"key": "1234",
+	"biddingAddress": "1390849295786071768276380950238675083608645509734"
     };
     const witness = await ZkGovAuction.calculateWitness(input);
     console.log(witness);
