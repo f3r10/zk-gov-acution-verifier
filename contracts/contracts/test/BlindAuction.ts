@@ -56,13 +56,13 @@ describe("BlindAuction", () => {
         it("Should allow users to bid", async () => {
             const { semaphoreContract, feedbackContract, groupId, verifierContract } = await loadFixture(deployFeedbackFixture)
 
-            const users = [new Identity()/* , new Identity(), new Identity(), new Identity() */]
+            const users = [new Identity(), new Identity(), new Identity(), new Identity()]
             const group = new Group()
             const scope = group.root
 
 	    const revealData = [];
-	    let init_bid = 100;
-	    let maxBid = 100000;
+	    let init_bid = 123;
+	    let maxBid = 10000000;
 
 	    const wasmPath = path.join(process.cwd(), 'test/zkproof/ZkGovAuction.wasm');
 	    const provingKeyPath = path.join(process.cwd(), 'test/zkproof/ZkGovAuction_final.zkey');
@@ -76,7 +76,7 @@ describe("BlindAuction", () => {
 		const input = {
 			bid: init_bid,
 			biddingAddress: BigInt("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
-			key: blindSecret,
+			x: BigInt(1),
 			groupId : groupId,
 			maxBid: BigInt(maxBid)
 		};
@@ -115,25 +115,26 @@ describe("BlindAuction", () => {
 			proof.points,
 		)
 
-		// const input2 = {
-		// 	bid: init_bid,
-		// 	biddingAddress: BigInt("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
-		// 	groupId : groupId,
-		// 	x: BigInt(2)
-		// };
-		// const proof_3 = await proofToSCFormat(
-		// 	input2,
-		// 	wasmPath,
-		// 	provingKeyPath
-		// );
-		// const transaction2 =  await feedbackContract.revealBid(
-		// 	proof_3.a,
-		// 	proof_3.b,
-		// 	proof_3.c,
-		// 	proof_3.pub
-		//
-		// )
-		// revealData.push([init_bid.toString(), blindSecret.toString()]);
+		const input2 = {
+			bid: init_bid,
+			biddingAddress: BigInt("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"),
+			x: BigInt(2),
+			groupId : groupId,
+			maxBid: BigInt(maxBid)
+		};
+		const proof_3 = await exportCallDataGroth16(
+			input2,
+			wasmPath,
+			provingKeyPath
+		);
+		const transaction2 =  await feedbackContract.revealBid(
+			proof_3.a,
+			proof_3.b,
+			proof_3.c,
+			proof_3.Input
+
+		)
+		revealData.push([init_bid.toString(), blindSecret.toString()]);
 		init_bid = init_bid * 5;
             }
 	    // console.log("revealData", revealData)
@@ -142,8 +143,9 @@ describe("BlindAuction", () => {
 	    const bids = await feedbackContract.getBids();
 	    console.log("bids", bids);
 
-	    const rbids = await feedbackContract.getRevealBids();
-	    console.log("rbids", rbids);
+	    await feedbackContract.revealWinner();
+	    const bidWinner = await feedbackContract.bidWinner();
+	    console.log("bidWinner", bidWinner);
 	    // for (const r of revealData) {
 		   //  console.log("going to insert", r[0].toString())
 		   //  await feedbackContract.reveal_phase(r[0].toString(), r[1].toString())

@@ -9,7 +9,7 @@ interface IVerifier {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[4] memory input
+        uint256[6] memory input
     ) external view returns (bool);
 }
 
@@ -19,7 +19,7 @@ contract BlindAuction {
     uint256 public groupId;
     // keeps track of all blinded bids that will be retrieved by auctioneer
     uint256[] public bids;
-    uint256[] public revealedBid;
+    // uint256[] public revealedBid;
 // contract address of our circuit verifier
     address public verifierContractAddress;
 address public highestBidder;
@@ -27,7 +27,15 @@ address public highestBidder;
 // blindedbids => bidders
     mapping(address => uint256) public hashedBidsToBidders;
 
-    uint256[][] public reveal_bids;
+    struct BidInfo{
+	    address bidder;
+	    uint256 bid;
+    }
+    BidInfo[] public revealedBid;
+
+    address winner;
+    bool winnerRevealed;
+    uint256 finalBid;
 
 
     constructor(address semaphoreAddress, address _verifierAddress) {
@@ -59,7 +67,7 @@ address public highestBidder;
         uint256[2] memory _proof_a,
         uint256[2][2] memory _proof_b,
         uint256[2] memory _proof_c,
-	uint256[4] memory inputs
+	uint256[6] memory inputs
     ) external {
         ISemaphore.SemaphoreProof memory proof = ISemaphore.SemaphoreProof(
             merkleTreeDepth,
@@ -81,7 +89,7 @@ address public highestBidder;
     uint256[2] memory _proof_a,
     uint256[2][2] memory _proof_b,
     uint256[2] memory _proof_c,
-    uint256[4] memory inputs
+    uint256[6] memory inputs
   ) external {
 
     if (
@@ -95,11 +103,31 @@ address public highestBidder;
       revert();
     }
     uint256 prevY = hashedBidsToBidders[msg.sender];
-    uint256 a1 = inputs[0] - prevY;
-    uint256 a0 = prevY - a1;
+    uint256 a1;
+    unchecked {a1 = inputs[0] - prevY;}
+    uint256 a0; 
+    unchecked {a0 = prevY - a1;}
     // store everyones bid;
-    revealedBid.push(a0);
+    revealedBid.push(BidInfo(msg.sender, a0));
     // revealed[msg.sender] = true;
+  }
+
+function revealWinner() external {
+    // if (block.timestamp < revealDue) revert();
+    uint256 _max;
+    address _winner;
+    for (uint256 i = 0; i < revealedBid.length; ) {
+      if (revealedBid[i].bid > _max) {
+        _max = revealedBid[i].bid;
+        _winner = revealedBid[i].bidder;
+      }
+      unchecked {
+        i++;
+      }
+    }
+    finalBid = _max;
+    winner = _winner;
+    winnerRevealed = true;
   }
 
     function reveal_phase(uint256 public_bid, uint256 secret) external {
@@ -124,13 +152,13 @@ address public highestBidder;
     {
         return bids;
     }
- // function getRevealBids()
- //        external
- //        view
- //        returns (uint256[] memory)
- //    {
- //        return revealedBid;
- //    }
+ function bidWinner()
+        external
+        view
+        returns (uint256)
+    {
+        return finalBid;
+    }
  //
  // function getRevealBids()
  //        external

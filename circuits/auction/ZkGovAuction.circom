@@ -5,13 +5,13 @@ include "../node_modules/circomlib/circuits/comparators.circom";
 template ZauKtion() {
     // private signals
     signal input bid;
-    signal input key;
     //signal input idSecret;
 
     // public signals
     signal input biddingAddress;
     signal input groupId;
     signal input maxBid;
+    signal input x;
 
     component gt = GreaterThan(128);
     gt.in[0] <== bid;
@@ -26,10 +26,13 @@ template ZauKtion() {
     1 === lt.out;
     
     // outputs
+    signal output y;
     signal output idCommitment;
     
-    idCommitment <== Poseidon(4)([bid, biddingAddress, groupId, key]);
+    idCommitment <== Poseidon(2)([bid, biddingAddress]);
+    signal a1 <== Poseidon(3)([bid, groupId, biddingAddress]);
+    y <== a1 * x + bid;
 
 }
 
-component main { public [groupId, biddingAddress, maxBid] } = ZauKtion();
+component main { public [groupId, biddingAddress, maxBid, x] } = ZauKtion();
