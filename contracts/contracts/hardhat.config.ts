@@ -8,6 +8,7 @@ import "./tasks/deploy"
 require("hardhat-gas-reporter");
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
+require("dotenv").config();
 
 const config: HardhatUserConfig = {
     solidity: "0.8.23",
@@ -37,7 +38,17 @@ const config: HardhatUserConfig = {
     },
     sourcify: {
         enabled: true
-    }
+    },
+    networks: {
+	    sepolia: {
+		    url: "https://rpc.sepolia.org/",
+		    accounts: [process.env.PRIVATE_KEY],
+	    },
+	    mumbai: {
+		    url: "https://rpc-mumbai.maticvigil.com",
+		    accounts: [process.env.PRIVATE_KEY],
+	    },
+    },
 }
 
 export default config
