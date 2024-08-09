@@ -5,11 +5,18 @@ import { config as dotenvConfig } from "dotenv"
 import { HardhatUserConfig } from "hardhat/config"
 import { resolve } from "path"
 import "./tasks/deploy"
+require("hardhat-gas-reporter");
 
 dotenvConfig({ path: resolve(__dirname, "../../.env") })
 
 const config: HardhatUserConfig = {
     solidity: "0.8.23",
+    settings: {
+	    optimizer: {
+		    enabled: true,
+		    runs: 200,
+	    },
+    },
     defaultNetwork: process.env.DEFAULT_NETWORK || "hardhat",
     networks: {
         hardhat: {

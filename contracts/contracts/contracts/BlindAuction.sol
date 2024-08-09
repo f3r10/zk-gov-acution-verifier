@@ -44,14 +44,6 @@ address public highestBidder;
         groupId = semaphore.createGroup();
 	verifierContractAddress = _verifierAddress;
     }
- // function verifyProof(
- //        uint256[2] memory a,
- //        uint256[2][2] memory b,
- //        uint256[2] memory c,
- //        uint256[10] memory input
- //    ) public view returns (bool) {
- //        return IVerifier(verifierContractAddress).verifyProof(a, b, c, input);
- //    }
 
     function joinGroup(uint256 identityCommitment) external {
         semaphore.addMember(groupId, identityCommitment);
@@ -114,10 +106,10 @@ address public highestBidder;
 
 function revealWinner() external {
     // if (block.timestamp < revealDue) revert();
-    uint256 _max;
+    uint256 _max = revealedBid[0].bid;
     address _winner;
-    for (uint256 i = 0; i < revealedBid.length; ) {
-      if (revealedBid[i].bid > _max) {
+    for (uint256 i = 1; i < revealedBid.length; ) {
+      if (revealedBid[i].bid < _max) {
         _max = revealedBid[i].bid;
         _winner = revealedBid[i].bidder;
       }
@@ -130,21 +122,6 @@ function revealWinner() external {
     winnerRevealed = true;
   }
 
-    function reveal_phase(uint256 public_bid, uint256 secret) external {
-	    //TODO check commitment is valid with secret and public bid
-	    // hashedBidsToBidders[msg.sender] here is the commitment
-	    // 
-	    if (highestBid == 0) {
-		    highestBid = public_bid;
-		    highestBidder = msg.sender;
-
-	    } else {
-		    if (public_bid < highestBid) {
-			    highestBid = public_bid;
-			    highestBidder = msg.sender;
-		    }
-	    }
-    }
  function getBids()
         external
         view
@@ -159,69 +136,4 @@ function revealWinner() external {
     {
         return finalBid;
     }
- //
- // function getRevealBids()
- //        external
- //        view
- //        returns (uint256[][] memory)
- //    {
- //        return reveal_bids;
- //    }
-/**
-     * Auctioneer will call this to getHighestBidder. restrict it to a certain address.
-     * input: highestBidValue, highestBlindedBid, bidsWithValidityStatus[totalBids], blindedBids[totalBids]
-     * cross-reference validity status with blindedBids using same position
-     */
- //    function getHighestBidder(
- //        uint256[2] memory a,
- //        uint256[2][2] memory b,
- //        uint256[2] memory c,
- //        uint256[10] memory input
- //    ) external {
- //        uint8 bidsLength = uint8(bids.length);
- //        // check that bids correspond to blindedBids in input values
- //        for (uint8 i = 0; i < bidsLength;) {
- //            require(
- //                 bytes32(input[i + 2 + bidsLength]) == bids[i],
- //                "blindedBids inputs to proof do not match auction blinded bids"
- //            );
- //            unchecked {
- //                ++i;
- //            }
- //        }
- //
- //        require(highestBidder == address(0), "bids were already tallied");
- //        // run verify proof
- //        require(verifyProof(a, b, c, input) == true, "proof is not valid");
- //        highestBid = input[0] * 1 ether; // convert to ether
- //        highestBidder = hashedBidsToBidders[(input[1])];
- //
- //        // for all refundable deposits, refund the bidder
- //        // if there are 4 bids, there will be 4+2 inputs.  i < (10-4)
- //        // i is going through the validity status of all bids which would be from input[2] to input[2+ bids.length]
- //        // for (uint8 i = 2; i < input.length - bidsLength;) {
- //        //     address bidder = hashedBidsToBidders[
- //        //         bytes32(input[i + bidsLength])
- //        //     ];
- //        //     // refund valid bids that were not the winner and had valid deposits
- //        //     if (
- //        //         deposits[bidder] > 0 && bidder != highestBidder && input[i] == 1
- //        //     ) {
- //        //         uint256 toRefund = deposits[bidder];
- //        //         deposits[bidder] = 0;
- //        //         payable(bidder).transfer(toRefund);
- //        //     }
- //        //     unchecked {
- //        //         ++i;
- //        //     }
- //        // }
- //    }
- //
- // function ghighestBidder()
- //        external
- //        view
- //        returns (uint256)
- //    {
- //        return highestBid;
- //    }
 }
