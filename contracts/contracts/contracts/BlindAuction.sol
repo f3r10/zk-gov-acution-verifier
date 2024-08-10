@@ -3,6 +3,7 @@ pragma solidity ^0.8.23;
 
 import "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
 import "poseidon-solidity/PoseidonT3.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 interface IVerifier {
     function verifyProof(
@@ -13,7 +14,7 @@ interface IVerifier {
     ) external view returns (bool);
 }
 
-contract BlindAuction {
+contract BlindAuction is Initializable {
     ISemaphore public semaphore;
 
     uint256 public groupId;
@@ -38,7 +39,7 @@ address public highestBidder;
     uint256 finalBid;
 
 
-    constructor(address semaphoreAddress, address _verifierAddress) {
+    function initialize(address semaphoreAddress, address _verifierAddress) public initializer {
         semaphore = ISemaphore(semaphoreAddress);
 
         groupId = semaphore.createGroup();

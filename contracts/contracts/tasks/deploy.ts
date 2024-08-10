@@ -16,7 +16,7 @@ task("deploy", "Deploy a Feedback contract")
 	const VerifierFactory = await ethers.getContractFactory("Groth16Verifier")
 	const verifierContract = await VerifierFactory.deploy()
 
-        const feedbackContract = await FeedbackFactory.deploy(semaphoreAddress, verifierContract.getAddress())
+        const feedbackContract = await FeedbackFactory.deploy(verifierContract.getAddress())
 
         if (logs) {
             console.info(`Feedback contract has been deployed to: ${await feedbackContract.getAddress()}`)

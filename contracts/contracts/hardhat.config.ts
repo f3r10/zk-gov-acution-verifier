@@ -1,5 +1,6 @@
 import "@nomicfoundation/hardhat-toolbox"
 import "@semaphore-protocol/hardhat"
+import "@openzeppelin/hardhat-upgrades";
 import { getHardhatNetworks } from "@semaphore-protocol/utils"
 import { config as dotenvConfig } from "dotenv"
 import { HardhatUserConfig } from "hardhat/config"
