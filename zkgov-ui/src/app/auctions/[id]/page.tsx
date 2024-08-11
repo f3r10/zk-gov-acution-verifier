@@ -7,6 +7,7 @@ import blindAuctionAbi from '../../../lib/abi/BlindAuction.json';
 import { useReadContract, useWriteContract } from 'wagmi';
 import { config } from "@/lib/config";
 import { Group, Identity, generateProof } from "@semaphore-protocol/core"
+const ethers = require("ethers")
 
 export default function AuctionDetail({ params }: { params: { slug: string } }) {
   const [auction, setAuction] = useState(undefined);
@@ -25,7 +26,11 @@ export default function AuctionDetail({ params }: { params: { slug: string } }) 
   console.log("joinGroupSemaphore")
   try {
 
-  const user = new Identity()
+	  const provider = new ethers.BrowserProvider(window.ethereum);
+	  let message = "message";
+	  const signer = await provider.getSigner();
+	  const signature = await signer.signMessage(message);
+	  const user = new Identity(signature)
 
 	//   const a = await writeContract({
 	// address: address,
