@@ -26,5 +26,5 @@ main().catch((error) => {
 })
 
 // verifierFactory Contract deployed to: 0xdF0317206B79370a3ACE50dd9D4cE508Ae14E60c
-// blindAuction Contract deployed to: 0x979C14AFcD29Eeb84C89bc7f8A6EB201E70E1F3C
-// blindAuctionFactory Contract deployed to: 0x405791fa9fE91040aE9b6084Ea24cD3d7F613fa5
+// blindAuction Contract deployed to: 0x748D54516c923bFF3FEaDC6e9822888687cb13A8
+// blindAuctionFactory Contract deployed to: 0x751dC56eBA0594f4A7208987BF15e26dbb9e02ec

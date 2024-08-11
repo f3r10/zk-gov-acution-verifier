@@ -147,4 +147,7 @@ function revealWinner() external {
 function getMaxBid() external view returns (uint256) {
 	return max_bid;
 }
+function getWinner() external view returns (address) {
+	return winner;
+}
 }

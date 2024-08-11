@@ -16,6 +16,8 @@ export default function AuctionDetail({ params }: { params: { slug: string } }) 
   const [currentCommitents, setCurrentCommitents] = useState([]);
   const [input0, setInput0] = useState("");
   const [input1, setInput1] = useState("");
+  const [winner, setWinner] = useState("");
+  const [winnerBid, setWinnerBid] = useState("");
   const [maxBid, setMaxBid] = useState(undefined);
   const [groupId, setGroupId] = useState(undefined);
   const { writeContract } = useWriteContract();
@@ -137,11 +139,29 @@ const generateProof = async () => {
 }
 
 
+const revealWinner = async () => {
+	  try {
+	  const a = await writeContract({
+	address: address,
+	abi: blindAuctionAbi.abi,
+	functionName: "revealWinner",
+	args: [],
+	});
+	console.log("response", a);
+	await fetchWinner();
+	  } catch (err: any) {
+    console.log("err", err)
+      const statusCode = err?.response?.status;
+      console.log("statusCode", statusCode)
+      const errorMsg = err?.response?.data?.error;
+      console.log("errorMsg", errorMsg)
+    }
+}
+
+
 const revealBid = async () => {
 	  const provider = new ethers.BrowserProvider(window.ethereum);
 	  const signer = await provider.getSigner();
-	  // const groupId = groupId;
-	  // const maxBid = maxBid;
 	  const addressSigner = await signer.getAddress();
 	  const data = {
 	  input1: input1,
@@ -192,6 +212,27 @@ const revealBid = async () => {
   bids = bids.map(a => a.toString());
   console.log("bids", bids[0])
     setCurrentCommitents(bids);
+ };
+
+ const fetchWinner = async () => {
+ console.log("address", address)
+  let winner = await readContract(config, {
+    address: address,
+    abi: blindAuctionAbi.abi,
+    functionName: "getWinner",
+    args: [],
+  });
+  // setWinner(winner)
+  setWinner(address)
+
+  let revealBid = await readContract(config, {
+    address: address,
+    abi: blindAuctionAbi.abi,
+    functionName: "getMaxBid",
+    args: [],
+  });
+  // setWinnerBid(revealBid)
+  setWinnerBid(123)
  };
 
  const createGroup = async () => {
@@ -266,6 +307,21 @@ const revealBid = async () => {
   type="button"
   className="mt-5 w-full py-2 bg-gray-600 text-white font-bold rounded transition duration-300 ease-in-out transform hover:scale-105 mb-3"
   onClick={revealBid} > Revelar Oferta  </button>
+  </p>
+
+  <p>
+  <button
+  type="button"
+  className="mt-5 w-full py-2 bg-gray-600 text-white font-bold rounded transition duration-300 ease-in-out transform hover:scale-105 mb-3"
+  onClick={revealWinner} > Revelar Ganador  </button>
+  </p>
+
+  <p>
+  <button
+  type="button"
+  className="mt-5 w-full py-2 bg-gray-600 text-white font-bold rounded transition duration-300 ease-in-out transform hover:scale-105 mb-3"
+  onClick={fetchWinner} > Obtener informacion ganador  </button>
+  <span>Ganador: {winner}, {winnerBid} </span>
   </p>
 
   </div>);
