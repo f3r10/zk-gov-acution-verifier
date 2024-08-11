@@ -11,7 +11,7 @@ const ethers = require("ethers")
 
 export default function AuctionDetail({ params }: { params: { slug: string } }) {
   const [auction, setAuction] = useState(undefined);
-// const router = useRouter();
+  const { writeContract } = useWriteContract();
   const blindAuctionFactoryAddress = Addresses.BLINDAUCTIONFACTORY;
   const id  = params.id;
   console.log("-----------id", params.id);
@@ -32,13 +32,15 @@ export default function AuctionDetail({ params }: { params: { slug: string } }) 
 	  const signature = await signer.signMessage(message);
 	  const user = new Identity(signature)
 
-	//   const a = await writeContract({
-	// address: address,
-	// abi: blindAuctionAbi.abi,
-	// functionName: "joinGroup",
-	// args: [BigInt(input0)],
-	// })
-	console.log("response", user.commitment)
+	  console.log("address", user.commitment);
+
+	  const a = await writeContract({
+	address: address,
+	abi: blindAuctionAbi.abi,
+	functionName: "joinGroup",
+	args: [user.commitment],
+	});
+	console.log("response", a)
   } catch (err: any) {
     console.log("err", err)
       const statusCode = err?.response?.status;
