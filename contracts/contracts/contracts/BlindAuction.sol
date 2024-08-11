@@ -25,6 +25,7 @@ contract BlindAuction is Initializable {
     address public verifierContractAddress;
 address public highestBidder;
     uint256 public highestBid;
+    
 // blindedbids => bidders
     mapping(address => uint256) public hashedBidsToBidders;
 
@@ -37,13 +38,18 @@ address public highestBidder;
     address winner;
     bool winnerRevealed;
     uint256 finalBid;
+    uint256 max_bid;
 
 
-    function initialize(address semaphoreAddress, address _verifierAddress) public initializer {
+    function initialize(address semaphoreAddress, address _verifierAddress, uint256 _max_bid) public initializer {
         semaphore = ISemaphore(semaphoreAddress);
-
-        groupId = semaphore.createGroup();
+        //groupId = semaphore.createGroup();
 	verifierContractAddress = _verifierAddress;
+	max_bid = _max_bid;
+    }
+
+    function createGroup() external {
+        groupId = semaphore.createGroup();
     }
 
     function joinGroup(uint256 identityCommitment) external {
@@ -137,4 +143,8 @@ function revealWinner() external {
     {
         return finalBid;
     }
+
+function getMaxBid() external view returns (uint256) {
+	return max_bid;
+}
 }
